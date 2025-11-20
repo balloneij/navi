@@ -67,20 +67,22 @@
 
 (defn- transform-object
   [^ObjectSchema schema]
-  (let [required (->> schema
-                      .getRequired
-                      (into #{}))
-        schemas (->> schema
-                     .getProperties
-                     (map #(i/->prop-schema required %))
-                     (into []))]
-    (into [:map {:closed false}] schemas)))
+  (if (empty-schema? schema)
+    any?
+    (let [required (->> schema
+                        .getRequired
+                        (into #{}))
+          schemas (->> schema
+                       .getProperties
+                       (map #(i/->prop-schema required %))
+                       (into []))]
+      (into [:map {:closed false}] schemas))))
 
 (defn- transform-array
   [^ArraySchema schema]
   (let [items (.getItems schema)]
     [:sequential
-     (if (nil? items)
+     (if (empty-schema? items)
        any?
        (p/transform items))]))
 
